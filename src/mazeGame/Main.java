@@ -39,16 +39,16 @@ public class Main {
 		Map w1 = new Map(mazeSize, p1, g1);
 		
 		//coordinates of player and guard
-		ArrayList<int[]> entityCoords = new ArrayList<>();
-		entityCoords.add(new int[] {p1.getEntityX(),p1.getEntityY()});
-		entityCoords.add(new int[] {g1.getEntityX(),g1.getEntityY()});
+		ArrayList<Entity> entityCoords = new ArrayList<>();
+		entityCoords.add(p1);
+		entityCoords.add(g1);
 		
 		//Main Game Loop which runs as long as the player and guard are not in the same tile
-		while ( (p1.getEntityX()!=g1.getEntityX()) || (p1.getEntityY()!=g1.getEntityY()) ) {
+		while ( (entityCoords.get(0).getEntityX()!=entityCoords.get(1).getEntityX()) || (entityCoords.get(0).getEntityY()!=entityCoords.get(1).getEntityY()) ) {
 			//prints current player attributes (position)
-			System.out.println("Player position: "+p1.getEntityX()+","+p1.getEntityY());
+			System.out.println("Player position: "+entityCoords.get(0).getEntityX()+","+entityCoords.get(0).getEntityY());
 			//prints current guard attributes (position)
-			System.out.println("Guard position: "+g1.getEntityX()+","+g1.getEntityY());
+			System.out.println("Guard position: "+entityCoords.get(1).getEntityX()+","+entityCoords.get(1).getEntityY());
 			//primary game prompt which asks user to choose movement direction
 			System.out.print("\nMove (W/A/S/D/Q): ");
 			String playerMove = s.nextLine().toUpperCase(); //accepts both lowercase and uppercase and transforms it to uppercase for consistency
@@ -58,33 +58,37 @@ public class Main {
 			//WASD
 			if ((move=='W')||(move=='A')||(move=='S')||(move=='D')) {
 				//stores the player's initial x,y coordinates
-				int playerX0 = p1.getEntityX();
-				int playerY0 = p1.getEntityY();
+				int playerX0 = entityCoords.get(0).getEntityX();
+				int playerY0 = entityCoords.get(0).getEntityY();
 				
-				//player moves
-				p1.move(move, w1);
-				
-				//stores the player's new x,y coordinates after the move
-				int playerX1 = p1.getEntityX();
-				int playerY1 = p1.getEntityY();
-				
-				//checks if the player has found all treasures and has won the game
-				if (w1.hasTreasure(playerX1,playerY1)==2) {
-					System.out.println("\nCongratulations! You won!");
-					break;
-				}
-				
-				//checks if the player's move has been successful to activate the movement of the guard
-				//either player found a treasure but have not collected all or it's a regular tile
-				if ( (playerX0!=playerX1) || (playerY0!=playerY1) ) {
-					//guard moves
-					g1.move(move, w1);
-					//checks if the player and the guard have the same coordinates which signals that the guard has caught the player and therefore lost the game
-					if ( (p1.getEntityX()==g1.getEntityX()) && (p1.getEntityY()==g1.getEntityY()) ) {
-						System.out.println("\nYou have been caught by the guard. You lose!!!");
-						break;
-					}
-				}
+				//loops through entities (0 = Player, 1 = Guard)
+			    for (int i = 0; i < entityCoords.size(); i++) {
+			    	Entity ntt = entityCoords.get(i);
+			    	
+			    	if (i==0) { //Player's turn to move
+			    		//player moves
+						ntt.move(move, w1);
+						
+						//checks if the player has found all treasures and has won the game
+						if (w1.hasTreasure(entityCoords.get(0).getEntityX(),entityCoords.get(0).getEntityY())==2) {
+							System.out.println("\nCongratulations! You won!");
+							s.close();
+							return;
+						}
+			    	} else if (i==1) { //Guard's turn to move
+			    		//checks if the player's move has been successful to activate the movement of the guard
+						//either player found a treasure but have not collected all or it's a regular tile
+						if ( (playerX0!=entityCoords.get(0).getEntityX()) || (playerY0!=entityCoords.get(0).getEntityY()) ) {
+							//guard moves
+							ntt.move(move, w1);
+							//checks if the player and the guard have the same coordinates which signals that the guard has caught the player and therefore lost the game
+							if ( (entityCoords.get(0).getEntityX()==entityCoords.get(1).getEntityX()) && (entityCoords.get(0).getEntityY()==entityCoords.get(1).getEntityY()) ) {
+								System.out.println("\nYou have been caught by the guard. You lose!!!");
+								break;
+							}
+						}
+			    	}
+			    }
 				
 			//QUIT / "Q"	
 			} else if (move == 'Q') {
@@ -96,7 +100,7 @@ public class Main {
 				System.out.println("\nThat's an invalid input bruh! Try again!");
 			}
 			
-		}
+		} //while loop
 
 		//closes the scanner
 		s.close();
